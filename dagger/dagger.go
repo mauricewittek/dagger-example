@@ -24,7 +24,7 @@ func main() {
 
 	// mount cloned repository into `golang` image
 	golang := client.Container().From("golang:latest")
-	golang = golang.WithMountedDirectory("/src", src).WithWorkdir("/src")
+	golang = golang.WithMountedDirectory("/src", src).WithWorkdir("/src").WithEnvVariable("CGO_ENABLED", "0")
 
 	// define the application build command
 	path := "build/"
@@ -39,4 +39,12 @@ func main() {
 		fmt.Printf("Error writing build directory to the host: %s", err)
 		os.Exit(1)
 	}
+
+	cn, _ := client.Container().Build(src).Publish(ctx, "mwittek/dagger-example:latest")
+	if err != nil {
+		fmt.Printf("Error building and publishing container: %s", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Successfully built and published container: %s", cn)
 }
